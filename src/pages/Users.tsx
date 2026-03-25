@@ -217,9 +217,9 @@ export default function Users() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   {u.permissions.includes('*') ? (
-                    <ShieldCheck className="h-4 w-4 text-purple-500" title="Acesso total" />
+                    <ShieldCheck className="h-4 w-4 text-purple-500" />
                   ) : (
-                    <Shield className="h-4 w-4 text-blue-500" title="Acesso personalizado" />
+                    <Shield className="h-4 w-4 text-blue-500" />
                   )}
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${
