@@ -1,4 +1,4 @@
-import type { Patient, Package, StockItem, StockMovement, Appointment, Collaborator, Commission, AuthUser, SystemUser } from '../types'
+import type { Patient, PatientPhoto, Package, StockItem, StockMovement, Appointment, Collaborator, Commission, AuthUser, SystemUser, Lead, Quote } from '../types'
 
 const API_BASE = import.meta.env.VITE_API_URL
 
@@ -62,6 +62,14 @@ export const api = {
       request<Patient>(`/patients/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: string) =>
       request<{ success: boolean }>(`/patients/${id}`, { method: 'DELETE' }),
+  },
+
+  patientPhotos: {
+    list: (patientId: string) => request<PatientPhoto[]>(`/patient-photos/${patientId}`),
+    create: (data: { patientId: string; photo: string; procedureName: string; date: string; notes?: string }) =>
+      request<PatientPhoto>('/patient-photos', { method: 'POST', body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      request<{ success: boolean }>(`/patient-photos/${id}`, { method: 'DELETE' }),
   },
 
   collaborators: {
@@ -133,6 +141,30 @@ export const api = {
       request<SystemUser>(`/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: string) =>
       request<{ success: boolean }>(`/users/${id}`, { method: 'DELETE' }),
+  },
+
+  leads: {
+    list: () => request<Lead[]>('/leads'),
+    get: (id: string) => request<Lead>(`/leads/${id}`),
+    create: (data: Omit<Lead, 'id' | 'createdAt'>) =>
+      request<Lead>('/leads', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<Lead>) =>
+      request<Lead>(`/leads/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      request<{ success: boolean }>(`/leads/${id}`, { method: 'DELETE' }),
+  },
+
+  quotes: {
+    list: () => request<Quote[]>('/quotes'),
+    get: (id: string) => request<Quote>(`/quotes/${id}`),
+    create: (data: Omit<Quote, 'id' | 'createdAt' | 'sentAt'>) =>
+      request<Quote>('/quotes', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<Quote>) =>
+      request<Quote>(`/quotes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    send: (id: string) =>
+      request<Quote>(`/quotes/${id}/send`, { method: 'POST' }),
+    delete: (id: string) =>
+      request<{ success: boolean }>(`/quotes/${id}`, { method: 'DELETE' }),
   },
 
   whatsapp: {

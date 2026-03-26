@@ -11,6 +11,16 @@ export interface Patient {
   createdAt: string
 }
 
+export interface PatientPhoto {
+  id: string
+  patientId: string
+  photo: string
+  procedureName: string
+  date: string
+  notes: string
+  createdAt: string
+}
+
 export interface Collaborator {
   id: string
   name: string
@@ -35,6 +45,8 @@ export type Permission =
   | 'financeiro'
   | 'whatsapp'
   | 'usuarios'
+  | 'comercial'
+  | 'orcamentos'
 
 export interface AuthUser {
   id: string
@@ -112,8 +124,36 @@ export interface Appointment {
   service: string
   date: string
   time: string
+  room: string
   status: 'scheduled' | 'completed' | 'missed' | 'cancelled'
   stockUsed: { stockItemId: string; quantity: number }[]
+  notes: string
+  createdAt: string
+}
+
+export interface Lead {
+  id: string
+  name: string
+  phone: string
+  email: string
+  source: string
+  status: 'novo' | 'em_contato' | 'convertido' | 'perdido'
+  notes: string
+  createdAt: string
+}
+
+export interface Quote {
+  id: string
+  patientId: string | null
+  leadId: string | null
+  clientName: string
+  clientEmail: string
+  procedureName: string
+  sessions: number
+  totalValue: number
+  paymentMethod: string
+  status: 'rascunho' | 'enviado' | 'aceito' | 'recusado'
+  sentAt: string | null
   notes: string
   createdAt: string
 }

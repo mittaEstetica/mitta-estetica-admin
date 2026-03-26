@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -15,14 +15,18 @@ import {
   ChevronDown,
   ChevronUp,
   UserCheck,
+  Camera,
+  Image,
+  X,
 } from 'lucide-react'
 import { useData } from '../contexts/DataContext'
 import { formatDate, formatCurrency } from '../utils/storage'
-import { FACIAL_SERVICES, CORPORAL_SERVICES, type ServiceCategory } from '../utils/services'
+import { FACIAL_SERVICES, CORPORAL_SERVICES, SERVICE_LIST, type ServiceCategory } from '../utils/services'
 import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import SearchableSelect from '../components/ui/SearchableSelect'
-import type { Package } from '../types'
+import { api } from '../services/api'
+import type { Package, PatientPhoto } from '../types'
 
 const emptyPkgForm = {
   collaboratorId: '',
@@ -69,6 +73,46 @@ export default function PatientDetail() {
   const [expandedPkgId, setExpandedPkgId] = useState<string | null>(null)
   const [pkgStatusFilter, setPkgStatusFilter] = useState<string>('all')
   const [pkgServiceCategory, setPkgServiceCategory] = useState<ServiceCategory | ''>('')
+
+  const [photos, setPhotos] = useState<PatientPhoto[]>([])
+  const [photoModalOpen, setPhotoModalOpen] = useState(false)
+  const [photoForm, setPhotoForm] = useState({ photo: '', procedureName: '', date: '', notes: '' })
+  const [selectedPhoto, setSelectedPhoto] = useState<PatientPhoto | null>(null)
+  const photoFileRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (id) {
+      api.patientPhotos.list(id).then(setPhotos).catch(() => {})
+    }
+  }, [id])
+
+  const handlePhotoFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setPhotoForm((f) => ({ ...f, photo: reader.result as string }))
+    reader.readAsDataURL(file)
+  }, [])
+
+  const handlePhotoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!id || !photoForm.photo) return
+    const newPhoto = await api.patientPhotos.create({
+      patientId: id,
+      photo: photoForm.photo,
+      procedureName: photoForm.procedureName,
+      date: photoForm.date,
+    })
+    setPhotos((prev) => [newPhoto, ...prev])
+    setPhotoModalOpen(false)
+    setPhotoForm({ photo: '', procedureName: '', date: '', notes: '' })
+  }
+
+  const deletePhoto = async (photoId: string) => {
+    await api.patientPhotos.delete(photoId)
+    setPhotos((prev) => prev.filter((p) => p.id !== photoId))
+    setSelectedPhoto(null)
+  }
 
   const filteredPkgs = patientPackages.filter(
     (p) => pkgStatusFilter === 'all' || p.status === pkgStatusFilter,
@@ -230,7 +274,124 @@ export default function PatientDetail() {
         </div>
       </div>
 
-      {/* Pacotes - CRUD completo */}
+      {/* Fotos do Paciente */}
+      <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+          <div className="flex items-center gap-2">
+            <Image className="h-5 w-5 text-brand-gold" />
+            <h2 className="font-semibold text-gray-900">Fotos</h2>
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{photos.length}</span>
+          </div>
+          <button
+            onClick={() => { setPhotoForm({ photo: '', procedureName: '', date: '', notes: '' }); setPhotoModalOpen(true) }}
+            className="inline-flex items-center gap-1 rounded-lg bg-brand-gold px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" /> Nova Foto
+          </button>
+        </div>
+
+        {photos.length === 0 ? (
+          <div className="px-5 py-10 text-center">
+            <Camera className="mx-auto h-10 w-10 text-gray-200" />
+            <p className="mt-3 text-sm text-gray-400">Nenhuma foto registrada</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-4">
+            {photos.map((photo) => (
+              <div
+                key={photo.id}
+                onClick={() => setSelectedPhoto(photo)}
+                className="group relative cursor-pointer rounded-lg overflow-hidden aspect-square bg-gray-100"
+              >
+                <img src={photo.photo} alt="" className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end">
+                  <div className="w-full p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-xs text-white font-medium truncate">{photo.procedureName || 'Sem procedimento'}</p>
+                    <p className="text-[10px] text-white/80">{photo.date ? formatDate(photo.date) : ''}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Photo Lightbox */}
+      {selectedPhoto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setSelectedPhoto(null)}>
+          <div className="relative max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
+            <img src={selectedPhoto.photo} alt="" className="w-full rounded-lg" />
+            <div className="absolute top-2 right-2 flex gap-2">
+              <button onClick={() => deletePhoto(selectedPhoto.id)} className="rounded-full bg-red-500 p-2 text-white hover:bg-red-600">
+                <Trash2 className="h-4 w-4" />
+              </button>
+              <button onClick={() => setSelectedPhoto(null)} className="rounded-full bg-white/20 p-2 text-white hover:bg-white/30">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="mt-3 text-center text-white">
+              <p className="font-medium">{selectedPhoto.procedureName || 'Sem procedimento'}</p>
+              {selectedPhoto.date && <p className="text-sm text-white/70">{formatDate(selectedPhoto.date)}</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Upload Modal */}
+      <Modal open={photoModalOpen} onClose={() => setPhotoModalOpen(false)} title="Nova Foto" maxWidth="max-w-md">
+        <form onSubmit={handlePhotoSubmit} className="space-y-4">
+          <div className="flex flex-col items-center gap-3">
+            <div
+              onClick={() => photoFileRef.current?.click()}
+              className="relative flex h-40 w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:border-brand-400 transition-colors overflow-hidden"
+            >
+              {photoForm.photo ? (
+                <img src={photoForm.photo} alt="" className="h-full w-full object-contain" />
+              ) : (
+                <div className="text-center">
+                  <Camera className="mx-auto h-8 w-8 text-gray-400" />
+                  <p className="mt-1 text-xs text-gray-500">Clique para selecionar</p>
+                </div>
+              )}
+            </div>
+            <input ref={photoFileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoFile} />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Procedimento Realizado *</label>
+            <select
+              required
+              value={photoForm.procedureName}
+              onChange={(e) => setPhotoForm((f) => ({ ...f, procedureName: e.target.value }))}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400"
+            >
+              <option value="">Selecione...</option>
+              {SERVICE_LIST.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Data *</label>
+            <input
+              required
+              type="date"
+              value={photoForm.date}
+              onChange={(e) => setPhotoForm((f) => ({ ...f, date: e.target.value }))}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400"
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={() => setPhotoModalOpen(false)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              Cancelar
+            </button>
+            <button type="submit" disabled={!photoForm.photo} className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors disabled:opacity-50">
+              Salvar Foto
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Pacotes */}
       <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <div className="flex items-center gap-2">
@@ -422,19 +583,24 @@ export default function PatientDetail() {
           {patientAppts.length === 0 ? (
             <p className="px-5 py-8 text-center text-sm text-gray-400">Nenhum agendamento</p>
           ) : (
-            patientAppts.map((a) => (
-              <div key={a.id} className="flex items-center justify-between px-5 py-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{a.service}</p>
-                  <p className="text-xs text-gray-500">
-                    {formatDate(a.date)} às {a.time}
-                  </p>
+            patientAppts.map((a) => {
+              const collab = a.collaboratorId ? collaborators.find((c) => c.id === a.collaboratorId) : null
+              return (
+                <div key={a.id} className="flex items-center justify-between px-5 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{a.service}</p>
+                    <p className="text-xs text-gray-500">
+                      {formatDate(a.date)} às {a.time}
+                      {collab && <span className="ml-2 text-purple-600">· {collab.name}</span>}
+                      {a.room && <span className="ml-2 text-gray-400">· {a.room === 'sala2' ? 'Sala 2' : 'Sala 1'}</span>}
+                    </p>
+                  </div>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${apptStatusColors[a.status]}`}>
+                    {apptStatusLabels[a.status]}
+                  </span>
                 </div>
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${apptStatusColors[a.status]}`}>
-                  {apptStatusLabels[a.status]}
-                </span>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
       </div>

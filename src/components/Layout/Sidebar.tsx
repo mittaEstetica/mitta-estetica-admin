@@ -11,6 +11,9 @@ import {
   X,
   Sparkles,
   LogOut,
+  Megaphone,
+  FileText,
+  PackageCheck,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Permission } from '../../types'
@@ -18,9 +21,12 @@ import type { Permission } from '../../types'
 const allLinks: { to: string; icon: typeof LayoutDashboard; label: string; permission: Permission }[] = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', permission: 'dashboard' },
   { to: '/pacientes', icon: Users, label: 'Pacientes', permission: 'pacientes' },
+  { to: '/agendamentos', icon: CalendarDays, label: 'Agenda', permission: 'agendamentos' },
   { to: '/colaboradoras', icon: UserCheck, label: 'Colaboradoras', permission: 'colaboradoras' },
+  { to: '/pacotes-finalizados', icon: PackageCheck, label: 'Pacotes Finalizados', permission: 'pacientes' },
+  { to: '/comercial', icon: Megaphone, label: 'Comercial', permission: 'comercial' },
+  { to: '/orcamentos', icon: FileText, label: 'Orçamentos', permission: 'orcamentos' },
   { to: '/estoque', icon: Warehouse, label: 'Estoque', permission: 'estoque' },
-  { to: '/agendamentos', icon: CalendarDays, label: 'Agendamentos', permission: 'agendamentos' },
   { to: '/financeiro', icon: DollarSign, label: 'Financeiro', permission: 'financeiro' },
   { to: '/whatsapp', icon: MessageCircle, label: 'WhatsApp', permission: 'whatsapp' },
   { to: '/usuarios', icon: UserCog, label: 'Usuários', permission: 'usuarios' },

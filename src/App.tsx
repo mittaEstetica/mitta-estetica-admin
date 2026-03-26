@@ -13,6 +13,9 @@ import CollaboratorDetail from './pages/CollaboratorDetail'
 import Financial from './pages/Financial'
 import WhatsAppConfig from './pages/WhatsAppConfig'
 import UsersPage from './pages/Users'
+import Leads from './pages/Leads'
+import Quotes from './pages/Quotes'
+import CompletedPackages from './pages/CompletedPackages'
 import type { Permission } from './types'
 
 function ProtectedRoute({ permission, children }: { permission: Permission; children: React.ReactNode }) {
@@ -45,6 +48,9 @@ function AppRoutes() {
           <Route path="/agendamentos" element={<ProtectedRoute permission="agendamentos"><Appointments /></ProtectedRoute>} />
           <Route path="/colaboradoras" element={<ProtectedRoute permission="colaboradoras"><Collaborators /></ProtectedRoute>} />
           <Route path="/colaboradoras/:id" element={<ProtectedRoute permission="colaboradoras"><CollaboratorDetail /></ProtectedRoute>} />
+          <Route path="/pacotes-finalizados" element={<ProtectedRoute permission="pacientes"><CompletedPackages /></ProtectedRoute>} />
+          <Route path="/comercial" element={<ProtectedRoute permission="comercial"><Leads /></ProtectedRoute>} />
+          <Route path="/orcamentos" element={<ProtectedRoute permission="orcamentos"><Quotes /></ProtectedRoute>} />
           <Route path="/estoque" element={<ProtectedRoute permission="estoque"><Stock /></ProtectedRoute>} />
           <Route path="/financeiro" element={<ProtectedRoute permission="financeiro"><Financial /></ProtectedRoute>} />
           <Route path="/whatsapp" element={<ProtectedRoute permission="whatsapp"><WhatsAppConfig /></ProtectedRoute>} />

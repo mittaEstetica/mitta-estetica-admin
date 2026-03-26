@@ -237,8 +237,9 @@ export default function Patients() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Telefone</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Telefone *</label>
               <input
+                required
                 type="tel"
                 value={form.phone}
                 onChange={(e) => set('phone', e.target.value)}
@@ -266,8 +267,9 @@ export default function Patients() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Data de nascimento</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Data de nascimento *</label>
               <input
+                required
                 type="date"
                 value={form.birthDate}
                 onChange={(e) => set('birthDate', e.target.value)}

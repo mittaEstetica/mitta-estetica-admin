@@ -23,6 +23,8 @@ const AVAILABLE_PERMISSIONS: { key: Permission; label: string; description: stri
   { key: 'estoque', label: 'Estoque', description: 'Controle de materiais e insumos' },
   { key: 'financeiro', label: 'Financeiro', description: 'Relatórios financeiros' },
   { key: 'whatsapp', label: 'WhatsApp', description: 'Lembretes e mensagens' },
+  { key: 'comercial', label: 'Comercial', description: 'Gestão de leads e prospecção' },
+  { key: 'orcamentos', label: 'Orçamentos', description: 'Criação e envio de orçamentos' },
   { key: 'usuarios', label: 'Usuários', description: 'Gerenciar contas e permissões' },
 ]
 
