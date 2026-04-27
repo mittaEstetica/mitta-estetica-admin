@@ -1,4 +1,4 @@
-import type { Patient, PatientPhoto, Package, StockItem, StockMovement, Appointment, Collaborator, Commission, AuthUser, SystemUser, Lead, Quote } from '../types'
+import type { Patient, PatientPhoto, Package, StockItem, StockMovement, Appointment, Collaborator, Commission, AuthUser, SystemUser, Lead, Quote, Transaction } from '../types'
 
 const API_BASE = import.meta.env.VITE_API_URL
 
@@ -180,5 +180,13 @@ export const api = {
       request<{ messageTemplate: string; cronHour: string }>('/whatsapp/settings'),
     updateSettings: (data: { messageTemplate?: string; cronHour?: string }) =>
       request<{ success: boolean }>('/whatsapp/settings', { method: 'PUT', body: JSON.stringify(data) }),
+  },
+  transactions: {
+    list: () => request<Transaction[]>('/transactions'),
+    create: (data: Omit<Transaction, 'id' | 'createdAt'>) =>
+      request<Transaction>('/transactions', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: Omit<Transaction, 'id' | 'createdAt'>) =>
+      request<Transaction>(`/transactions/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id: string) => request<{ success: boolean }>(`/transactions/${id}`, { method: 'DELETE' }),
   },
 }

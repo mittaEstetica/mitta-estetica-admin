@@ -27,7 +27,16 @@ export default function Dashboard() {
     const tomorrowAppts = appointments.filter((a) => a.date === tomorrow)
     const missedTotal = appointments.filter((a) => a.status === 'missed').length
     const activePackages = packages.filter((p) => p.status === 'active')
-    const totalRevenue = packages.reduce((sum, p) => sum + p.paidValue, 0)
+    
+    const todayDate = new Date()
+    const currentMonth = todayDate.getMonth()
+    const currentYear = todayDate.getFullYear()
+    const monthlyPackages = packages.filter((p) => {
+      const pDate = new Date(p.createdAt)
+      return pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear
+    })
+    const totalRevenue = monthlyPackages.reduce((sum, p) => sum + p.paidValue, 0)
+
     const lowStock = stockItems.filter((s) => s.quantity <= s.minQuantity)
     const completedToday = todayAppts.filter((a) => a.status === 'completed').length
     const scheduledToday = todayAppts.filter((a) => a.status === 'scheduled').length
@@ -78,10 +87,10 @@ export default function Dashboard() {
       color: 'bg-brand-50 text-brand-700',
       link: '/pacientes',
     },
-    ...(hasPermission('financeiro')
+    ...(isAdmin
       ? [
           {
-            label: 'Receita Total',
+            label: 'Receita do Mês',
             value: formatCurrency(stats.totalRevenue),
             icon: DollarSign,
             color: 'bg-green-50 text-green-600',

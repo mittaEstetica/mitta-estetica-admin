@@ -11,6 +11,7 @@ import {
   UserCheck,
   XCircle,
   Clock,
+  AlertTriangle,
 } from 'lucide-react'
 import { useData } from '../contexts/DataContext'
 import { formatCurrency, toISODate } from '../utils/storage'
@@ -76,6 +77,12 @@ export default function Appointments() {
   const [form, setForm] = useState(emptyForm)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [serviceCategory, setServiceCategory] = useState<ServiceCategory | ''>('')
+  const [toastMsg, setToastMsg] = useState('')
+
+  const triggerToast = (msg: string) => {
+    setToastMsg(msg)
+    setTimeout(() => setToastMsg(''), 4000)
+  }
 
   const firstDayOfWeek = new Date(currentMonth.year, currentMonth.month, 1).getDay()
   const daysInMonth = new Date(currentMonth.year, currentMonth.month + 1, 0).getDate()
@@ -148,6 +155,41 @@ export default function Appointments() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    const parseTime = (t: string) => {
+      if (!t) return 0
+      const [h, m] = t.split(':').map(Number)
+      return h * 60 + (m || 0)
+    }
+    const getRange = (timeStr: string) => {
+      const parts = timeStr.split(' às ')
+      const start = parseTime(parts[0])
+      const end = parts[1] ? parseTime(parts[1]) : start + 30
+      return [start, end]
+    }
+
+    const [newStart, newEnd] = getRange(form.time)
+
+    if (newEnd <= newStart && form.time.includes(' às ')) {
+      triggerToast('O horário de término deve ser maior que o de início.')
+      return
+    }
+
+    const hasOverlap = appointments.some(appt => {
+      if (appt.date !== form.date) return false
+      if (appt.room !== form.room) return false
+      if (appt.status === 'cancelled') return false
+      if (editing && appt.id === editing.id) return false
+
+      const [existStart, existEnd] = getRange(appt.time)
+      return newStart < existEnd && newEnd > existStart
+    })
+
+    if (hasOverlap) {
+      triggerToast('Atenção: Já existe um agendamento nesta sala que coincide com este horário!')
+      return
+    }
+
     if (editing) {
       await updateAppointment({ ...editing, ...form })
     } else {
@@ -455,15 +497,26 @@ export default function Appointments() {
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Data *</label>
               <input required type="date" value={form.date} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Horário *</label>
-              <input required type="time" value={form.time} onChange={(e) => setForm((f) => ({ ...f, time: e.target.value }))}
+              <label className="mb-1 block text-sm font-medium text-gray-700">Início *</label>
+              <input required type="time" value={form.time.split(' às ')[0] || ''} onChange={(e) => {
+                const endTime = form.time.split(' às ')[1] || ''
+                setForm((f) => ({ ...f, time: e.target.value + (endTime ? ' às ' + endTime : '') }))
+              }}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400" />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Fim (opcional)</label>
+              <input type="time" value={form.time.split(' às ')[1] || ''} onChange={(e) => {
+                const startTime = form.time.split(' às ')[0] || ''
+                setForm((f) => ({ ...f, time: startTime + (e.target.value ? ' às ' + e.target.value : '') }))
+              }}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400" />
             </div>
           </div>
@@ -537,6 +590,13 @@ export default function Appointments() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />
+
+      {toastMsg && (
+        <div className="fixed bottom-4 right-4 z-[9999] rounded-lg bg-amber-50 border border-amber-200 p-4 shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
+          <AlertTriangle className="h-5 w-5 text-amber-500" />
+          <p className="text-sm font-medium text-amber-800">{toastMsg}</p>
+        </div>
+      )}
     </div>
   )
 }

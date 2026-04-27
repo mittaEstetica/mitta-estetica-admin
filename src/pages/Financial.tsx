@@ -31,8 +31,8 @@ export default function Financial() {
       filteredCommissions = commissions.filter((c) => new Date(c.createdAt) >= startDate)
     }
 
-    const totalCollaborators = filteredCommissions.reduce((sum, c) => sum + c.collaboratorAmount, 0)
-    const totalClinic = filteredCommissions.reduce((sum, c) => sum + c.clinicAmount, 0)
+    const totalCollaborators = filteredCommissions.reduce((sum, c) => sum + c.clinicAmount, 0)
+    const totalClinic = filteredCommissions.reduce((sum, c) => sum + c.collaboratorAmount, 0)
     const totalRevenue = totalCollaborators + totalClinic
     const totalSessions = filteredCommissions.length
 
@@ -41,9 +41,9 @@ export default function Financial() {
       if (!byCollaborator[com.collaboratorId]) {
         byCollaborator[com.collaboratorId] = { earned: 0, sessions: 0, clinic: 0 }
       }
-      byCollaborator[com.collaboratorId].earned += com.collaboratorAmount
+      byCollaborator[com.collaboratorId].earned += com.clinicAmount
       byCollaborator[com.collaboratorId].sessions += 1
-      byCollaborator[com.collaboratorId].clinic += com.clinicAmount
+      byCollaborator[com.collaboratorId].clinic += com.collaboratorAmount
     }
 
     const collaboratorBreakdown = Object.entries(byCollaborator)

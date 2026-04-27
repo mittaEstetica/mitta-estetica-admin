@@ -14,6 +14,7 @@ import {
   Megaphone,
   FileText,
   PackageCheck,
+  ArrowLeftRight,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Permission } from '../../types'
@@ -28,6 +29,7 @@ const allLinks: { to: string; icon: typeof LayoutDashboard; label: string; permi
   { to: '/orcamentos', icon: FileText, label: 'Orçamentos', permission: 'orcamentos' },
   { to: '/estoque', icon: Warehouse, label: 'Estoque', permission: 'estoque' },
   { to: '/financeiro', icon: DollarSign, label: 'Financeiro', permission: 'financeiro' },
+  { to: '/fluxo-caixa', icon: ArrowLeftRight, label: 'Entrada e Saída', permission: 'fluxo-caixa' },
   { to: '/whatsapp', icon: MessageCircle, label: 'WhatsApp', permission: 'whatsapp' },
   { to: '/usuarios', icon: UserCog, label: 'Usuários', permission: 'usuarios' },
 ]

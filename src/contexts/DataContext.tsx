@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react'
-import type { Patient, Package, StockItem, StockMovement, Appointment, Collaborator, Commission } from '../types'
+import type { Patient, Package, StockItem, StockMovement, Appointment, Collaborator, Commission, Transaction } from '../types'
 import { api } from '../services/api'
 import { useAuth } from './AuthContext'
 
@@ -37,6 +37,11 @@ interface DataContextType {
   markMissed: (id: string) => Promise<void>
 
   refreshCommissions: () => Promise<void>
+
+  transactions: Transaction[]
+  addTransaction: (t: Omit<Transaction, 'id' | 'createdAt'>) => Promise<Transaction>
+  updateTransaction: (t: Transaction) => Promise<void>
+  deleteTransaction: (id: string) => Promise<void>
 }
 
 const DataContext = createContext<DataContextType | null>(null)
@@ -57,6 +62,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [allAppointments, setAllAppointments] = useState<Appointment[]>([])
   const [collaborators, setCollaborators] = useState<Collaborator[]>([])
   const [commissions, setCommissions] = useState<Commission[]>([])
+  const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -68,7 +74,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       api.appointments.list(),
       api.collaborators.list(),
       api.commissions.list(),
-    ]).then(([p, pkg, si, sm, a, c, com]) => {
+      api.transactions.list(),
+    ]).then(([p, pkg, si, sm, a, c, com, tr]) => {
       setAllPatients(p)
       setAllPackages(pkg)
       setStockItems(si)
@@ -76,6 +83,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setAllAppointments(a)
       setCollaborators(c)
       setCommissions(com)
+      setTransactions(tr)
     }).finally(() => setLoading(false))
   }, [])
 
@@ -217,6 +225,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setAllAppointments((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
   }, [])
 
+  const addTransaction = useCallback(async (t: Omit<Transaction, 'id' | 'createdAt'>) => {
+    const created = await api.transactions.create(t)
+    setTransactions((prev) => [created, ...prev])
+    return created
+  }, [])
+
+  const updateTransaction = useCallback(async (t: Transaction) => {
+    const updated = await api.transactions.update(t.id, t)
+    setTransactions((prev) => prev.map((x) => (x.id === updated.id ? updated : x)))
+  }, [])
+
+  const deleteTransaction = useCallback(async (id: string) => {
+    await api.transactions.delete(id)
+    setTransactions((prev) => prev.filter((x) => x.id !== id))
+  }, [])
+
   return (
     <DataContext.Provider
       value={{
@@ -247,6 +271,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         completeAppointment,
         markMissed,
         refreshCommissions,
+        transactions,
+        addTransaction,
+        updateTransaction,
+        deleteTransaction,
       }}
     >
       {children}

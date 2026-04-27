@@ -9,6 +9,7 @@ import {
   Percent,
   Eye,
   KeyRound,
+  Power,
 } from 'lucide-react'
 import { useData } from '../contexts/DataContext'
 import { formatCurrency } from '../utils/storage'
@@ -185,6 +186,13 @@ export default function Collaborators() {
                     className="inline-flex items-center gap-1 text-xs text-brand-gold hover:text-brand-700"
                   >
                     <Edit className="h-3 w-3" /> Editar
+                  </button>
+                  <span className="text-gray-200">|</span>
+                  <button
+                    onClick={() => updateCollaborator({ ...collab, active: !collab.active } as never)}
+                    className={`inline-flex items-center gap-1 text-xs ${collab.active ? 'text-amber-500 hover:text-amber-700' : 'text-green-500 hover:text-green-700'}`}
+                  >
+                    <Power className="h-3 w-3" /> {collab.active ? 'Inativar' : 'Ativar'}
                   </button>
                   <span className="text-gray-200">|</span>
                   <button

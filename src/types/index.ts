@@ -47,6 +47,7 @@ export type Permission =
   | 'usuarios'
   | 'comercial'
   | 'orcamentos'
+  | 'fluxo-caixa'
 
 export interface AuthUser {
   id: string
@@ -155,5 +156,14 @@ export interface Quote {
   status: 'rascunho' | 'enviado' | 'aceito' | 'recusado'
   sentAt: string | null
   notes: string
+  createdAt: string
+}
+
+export interface Transaction {
+  id: string
+  type: 'entrada' | 'saida'
+  amount: number
+  description: string
+  date: string
   createdAt: string
 }
