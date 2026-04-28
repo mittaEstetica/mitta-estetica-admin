@@ -14,7 +14,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { formatCurrency, toISODate } from '../utils/storage'
 
 export default function Dashboard() {
-  const { patients, packages, stockItems, appointments } = useData()
+  const { patients, packages, stockItems, appointments, transactions } = useData()
   const { user, isAdmin, hasPermission } = useAuth()
 
   const stats = useMemo(() => {
