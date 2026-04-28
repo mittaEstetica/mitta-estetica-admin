@@ -6,7 +6,7 @@ export interface Patient {
   cpf: string
   birthDate: string
   address: string
-  photo: string
+  photo: string | null
   notes: string
   createdAt: string
 }
