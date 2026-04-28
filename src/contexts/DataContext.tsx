@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react'
-import type { Patient, Package, StockItem, StockMovement, Appointment, Collaborator, Commission, Transaction } from '../types'
+import type { Patient, Package, StockItem, StockMovement, Appointment, Collaborator, Commission, Transaction, Service } from '../types'
 import { api } from '../services/api'
 import { useAuth } from './AuthContext'
 
@@ -42,6 +42,11 @@ interface DataContextType {
   addTransaction: (t: Omit<Transaction, 'id' | 'createdAt'>) => Promise<Transaction>
   updateTransaction: (t: Transaction) => Promise<void>
   deleteTransaction: (id: string) => Promise<void>
+
+  services: Service[]
+  addService: (s: Omit<Service, 'id' | 'createdAt'>) => Promise<Service>
+  updateService: (s: Service) => Promise<void>
+  deleteService: (id: string) => Promise<void>
 }
 
 const DataContext = createContext<DataContextType | null>(null)
@@ -63,6 +68,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([])
   const [commissions, setCommissions] = useState<Commission[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [allServices, setAllServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -75,7 +81,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       api.collaborators.list(),
       api.commissions.list(),
       api.transactions.list(),
-    ]).then(([p, pkg, si, sm, a, c, com, tr]) => {
+      api.services.list(),
+    ]).then(([p, pkg, si, sm, a, c, com, tr, sv]) => {
       setAllPatients(p)
       setAllPackages(pkg)
       setStockItems(si)
@@ -84,6 +91,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setCollaborators(c)
       setCommissions(com)
       setTransactions(tr)
+      setAllServices(sv)
     }).finally(() => setLoading(false))
   }, [])
 
@@ -241,6 +249,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setTransactions((prev) => prev.filter((x) => x.id !== id))
   }, [])
 
+  const addService = useCallback(async (s: Omit<Service, 'id' | 'createdAt'>) => {
+    const created = await api.services.create(s)
+    setAllServices((prev) => [...prev, created])
+    return created
+  }, [])
+
+  const updateService = useCallback(async (s: Service) => {
+    const updated = await api.services.update(s.id, s)
+    setAllServices((prev) => prev.map((x) => (x.id === updated.id ? updated : x)))
+  }, [])
+
+  const deleteService = useCallback(async (id: string) => {
+    await api.services.delete(id)
+    setAllServices((prev) => prev.filter((x) => x.id !== id))
+  }, [])
+
   return (
     <DataContext.Provider
       value={{
@@ -275,6 +299,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         addTransaction,
         updateTransaction,
         deleteTransaction,
+        services: allServices,
+        addService,
+        updateService,
+        deleteService,
       }}
     >
       {children}

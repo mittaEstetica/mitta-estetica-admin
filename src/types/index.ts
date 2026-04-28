@@ -6,7 +6,7 @@ export interface Patient {
   cpf: string
   birthDate: string
   address: string
-  photo: string | null
+  photo: string
   notes: string
   createdAt: string
 }
@@ -165,5 +165,14 @@ export interface Transaction {
   amount: number
   description: string
   date: string
+  createdAt: string
+  paid?: boolean
+  receiptUrl?: string | null
+}
+
+export interface Service {
+  id: string
+  name: string
+  category: 'facial' | 'corporal'
   createdAt: string
 }

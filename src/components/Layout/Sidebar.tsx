@@ -19,6 +19,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext'
 import type { Permission } from '../../types'
 
+
 const allLinks: { to: string; icon: typeof LayoutDashboard; label: string; permission: Permission }[] = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', permission: 'dashboard' },
   { to: '/pacientes', icon: Users, label: 'Pacientes', permission: 'pacientes' },
@@ -32,7 +33,7 @@ const allLinks: { to: string; icon: typeof LayoutDashboard; label: string; permi
   { to: '/fluxo-caixa', icon: ArrowLeftRight, label: 'Entrada e Saída', permission: 'fluxo-caixa' },
   { to: '/whatsapp', icon: MessageCircle, label: 'WhatsApp', permission: 'whatsapp' },
   { to: '/usuarios', icon: UserCog, label: 'Usuários', permission: 'usuarios' },
-]
+];
 
 interface Props {
   open: boolean

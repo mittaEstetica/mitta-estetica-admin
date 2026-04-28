@@ -42,10 +42,27 @@ export default function Dashboard() {
     const scheduledToday = todayAppts.filter((a) => a.status === 'scheduled').length
     const scheduledTomorrow = tomorrowAppts.filter((a) => a.status === 'scheduled').length
 
+    // Financial Stats
+    const totalPaidExpenses = transactions
+      .filter(t => t.type === 'saida' && t.paid)
+      .reduce((sum, t) => sum + t.amount, 0)
+    
+    const totalProjections = transactions
+      .filter(t => t.type === 'saida' && !t.paid)
+      .reduce((sum, t) => sum + t.amount, 0)
+
+    const upcomingPayments = transactions
+      .filter(t => t.type === 'saida' && !t.paid)
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(0, 5)
+
     return {
       totalPatients: patients.length,
       activePackages: activePackages.length,
       totalRevenue,
+      totalPaidExpenses,
+      totalProjections,
+      upcomingPayments,
       missedTotal,
       lowStockCount: lowStock.length,
       lowStockItems: lowStock.slice(0, 5),
@@ -57,7 +74,7 @@ export default function Dashboard() {
       tomorrowDate: tomorrow,
       recentPatients: [...patients].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5),
     }
-  }, [patients, packages, stockItems, appointments])
+  }, [patients, packages, stockItems, appointments, transactions])
 
   const apptStatusColors: Record<string, string> = {
     scheduled: 'bg-blue-100 text-blue-700',
@@ -95,6 +112,13 @@ export default function Dashboard() {
             icon: DollarSign,
             color: 'bg-green-50 text-green-600',
             link: '/financeiro',
+          },
+          {
+            label: 'Contas a Pagar',
+            value: formatCurrency(stats.totalProjections),
+            icon: AlertTriangle,
+            color: 'bg-orange-50 text-orange-600',
+            link: '/contas-a-pagar',
           },
         ]
       : []),
@@ -154,7 +178,7 @@ export default function Dashboard() {
               </span>
             </div>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-50 max-h-[300px] overflow-y-auto">
             {stats.todayAppts.length === 0 ? (
               <p className="px-5 py-8 text-center text-sm text-gray-400">Nenhum agendamento hoje</p>
             ) : (
@@ -190,7 +214,7 @@ export default function Dashboard() {
               {stats.scheduledTomorrow} agendado{stats.scheduledTomorrow !== 1 ? 's' : ''}
             </span>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-50 max-h-[300px] overflow-y-auto">
             {stats.tomorrowAppts.length === 0 ? (
               <p className="px-5 py-8 text-center text-sm text-gray-400">Nenhum agendamento amanhã</p>
             ) : (
@@ -223,7 +247,7 @@ export default function Dashboard() {
             <TrendingUp className="h-5 w-5 text-brand-green" />
             <h2 className="font-semibold text-gray-900">Pacientes Recentes</h2>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-50 max-h-[300px] overflow-y-auto">
             {stats.recentPatients.length === 0 ? (
               <p className="px-5 py-8 text-center text-sm text-gray-400">Nenhum paciente cadastrado</p>
             ) : (
@@ -272,6 +296,34 @@ export default function Dashboard() {
             <div className="px-5 py-3 border-t border-orange-200">
               <Link to="/estoque" className="text-sm font-medium text-orange-700 hover:text-orange-900">
                 Ver estoque completo →
+              </Link>
+            </div>
+          </div>
+        )}
+        {hasPermission('financeiro') && stats.upcomingPayments.length > 0 && (
+          <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+            <div className="flex items-center gap-2 border-b border-gray-100 px-5 py-4 bg-brand-50/30">
+              <DollarSign className="h-5 w-5 text-brand-gold" />
+              <h2 className="font-semibold text-gray-900">Próximos Vencimentos</h2>
+              <span className="ml-auto text-xs font-medium text-brand-700">Top 5 projeções</span>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {stats.upcomingPayments.map((p) => (
+                <div key={p.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{p.description}</p>
+                    <p className="text-xs text-gray-500">Vencimento: {p.date.split('-').reverse().join('/')}</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-bold text-gray-900">{formatCurrency(p.amount)}</p>
+                    <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Pendente</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="px-5 py-3 border-t border-gray-100 text-center">
+              <Link to="/contas-a-pagar" className="text-sm font-medium text-brand-gold hover:text-brand-700">
+                Ver todas as contas →
               </Link>
             </div>
           </div>

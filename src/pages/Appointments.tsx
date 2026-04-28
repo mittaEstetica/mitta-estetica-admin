@@ -12,10 +12,11 @@ import {
   XCircle,
   Clock,
   AlertTriangle,
+  Settings,
+  X
 } from 'lucide-react'
 import { useData } from '../contexts/DataContext'
-import { formatCurrency, toISODate } from '../utils/storage'
-import { FACIAL_SERVICES, CORPORAL_SERVICES, type ServiceCategory } from '../utils/services'
+import { toISODate } from '../utils/storage'
 import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import SearchableSelect from '../components/ui/SearchableSelect'
@@ -44,6 +45,9 @@ export default function Appointments() {
     packages,
     stockItems,
     collaborators,
+    services,
+    addService,
+    deleteService,
     addAppointment,
     updateAppointment,
     deleteAppointment,
@@ -57,12 +61,12 @@ export default function Appointments() {
   )
 
   const patientOptions = useMemo(
-    () => patients.map((p) => ({ value: p.id, label: p.name, subtitle: p.phone || undefined })),
+    () => patients.map((p) => ({ value: p.id, label: p.name })),
     [patients],
   )
 
   const collaboratorOptions = useMemo(
-    () => activeCollaborators.map((c) => ({ value: c.id, label: c.name, subtitle: `${c.commissionPercent}% comissão` })),
+    () => activeCollaborators.map((c) => ({ value: c.id, label: c.name })),
     [activeCollaborators],
   )
 
@@ -76,13 +80,25 @@ export default function Appointments() {
   const [editing, setEditing] = useState<Appointment | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
-  const [serviceCategory, setServiceCategory] = useState<ServiceCategory | ''>('')
+  const [serviceCategory, setServiceCategory] = useState<'facial' | 'corporal'>('facial')
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false)
+  const [newServiceName, setNewServiceName] = useState('')
+  const [newServiceCategory, setNewServiceCategory] = useState<'facial' | 'corporal'>('facial')
   const [toastMsg, setToastMsg] = useState('')
 
   const triggerToast = (msg: string) => {
     setToastMsg(msg)
     setTimeout(() => setToastMsg(''), 4000)
   }
+
+  const filteredServices = useMemo(() => {
+    return services.filter(s => s.category === serviceCategory)
+  }, [services, serviceCategory])
+
+  const serviceOptions = useMemo(
+    () => filteredServices.map((s) => ({ value: s.name, label: s.name })),
+    [filteredServices],
+  )
 
   const firstDayOfWeek = new Date(currentMonth.year, currentMonth.month, 1).getDay()
   const daysInMonth = new Date(currentMonth.year, currentMonth.month + 1, 0).getDate()
@@ -114,12 +130,6 @@ export default function Appointments() {
     return packages.filter((p) => p.patientId === form.patientId && p.status === 'active')
   }, [form.patientId, packages])
 
-  const detectCategory = (service: string): ServiceCategory | '' => {
-    if (FACIAL_SERVICES.includes(service as typeof FACIAL_SERVICES[number])) return 'facial'
-    if (CORPORAL_SERVICES.includes(service as typeof CORPORAL_SERVICES[number])) return 'corporal'
-    return ''
-  }
-
   const prevMonth = () =>
     setCurrentMonth((m) => m.month === 0 ? { year: m.year - 1, month: 11 } : { year: m.year, month: m.month - 1 })
   const nextMonth = () =>
@@ -131,7 +141,6 @@ export default function Appointments() {
   const openNew = (date?: string) => {
     setEditing(null)
     setForm({ ...emptyForm, date: date || selectedDate })
-    setServiceCategory('')
     setModalOpen(true)
   }
 
@@ -149,7 +158,9 @@ export default function Appointments() {
       stockUsed: appt.stockUsed,
       notes: appt.notes,
     })
-    setServiceCategory(detectCategory(appt.service))
+    // Try to find the service category
+    const svc = services.find(s => s.name === appt.service)
+    if (svc) setServiceCategory(svc.category)
     setModalOpen(true)
   }
 
@@ -196,6 +207,14 @@ export default function Appointments() {
       await addAppointment(form as Omit<Appointment, 'id' | 'createdAt'>)
     }
     setModalOpen(false)
+  }
+
+  const handleAddService = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newServiceName) return
+    await addService({ name: newServiceName, category: newServiceCategory })
+    setNewServiceName('')
+    triggerToast('Procedimento cadastrado com sucesso!')
   }
 
   const confirmDelete = async () => {
@@ -297,9 +316,14 @@ export default function Appointments() {
           <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
           <p className="text-sm text-gray-500 mt-1">Calendário mensal com salas</p>
         </div>
-        <button onClick={() => openNew()} className="inline-flex items-center gap-2 rounded-lg bg-brand-gold px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-brand-700 transition-colors">
-          <Plus className="h-4 w-4" /> Novo Agendamento
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setIsServiceModalOpen(true)} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors">
+            <Settings className="h-4 w-4 text-gray-400" /> Procedimentos
+          </button>
+          <button onClick={() => openNew()} className="inline-flex items-center gap-2 rounded-lg bg-brand-gold px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-brand-700 transition-colors">
+            <Plus className="h-4 w-4" /> Novo Agendamento
+          </button>
+        </div>
       </div>
 
       {/* Month Calendar */}
@@ -444,58 +468,37 @@ export default function Appointments() {
             />
           </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Sala *</label>
-            <div className="flex gap-3">
-              <label className={`flex-1 cursor-pointer rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-all ${
-                form.room === 'sala1' ? 'border-brand-gold bg-brand-50 text-brand-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'
-              }`}>
-                <input type="radio" name="room" value="sala1" checked={form.room === 'sala1'}
-                  onChange={() => setForm((f) => ({ ...f, room: 'sala1' }))} className="sr-only" />
-                Sala 1
-              </label>
-              <label className={`flex-1 cursor-pointer rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-all ${
-                form.room === 'sala2' ? 'border-brand-gold bg-brand-50 text-brand-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'
-              }`}>
-                <input type="radio" name="room" value="sala2" checked={form.room === 'sala2'}
-                  onChange={() => setForm((f) => ({ ...f, room: 'sala2' }))} className="sr-only" />
-                Sala 2
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Tipo de Procedimento *</label>
-            <div className="flex gap-3">
-              <label className={`flex-1 cursor-pointer rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-all ${
-                serviceCategory === 'facial' ? 'border-brand-gold bg-brand-50 text-brand-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'
-              }`}>
-                <input type="radio" name="serviceCategory" value="facial" checked={serviceCategory === 'facial'}
-                  onChange={() => { setServiceCategory('facial'); setForm((f) => ({ ...f, service: '' })) }} className="sr-only" />
-                Facial
-              </label>
-              <label className={`flex-1 cursor-pointer rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-all ${
-                serviceCategory === 'corporal' ? 'border-brand-gold bg-brand-50 text-brand-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'
-              }`}>
-                <input type="radio" name="serviceCategory" value="corporal" checked={serviceCategory === 'corporal'}
-                  onChange={() => { setServiceCategory('corporal'); setForm((f) => ({ ...f, service: '' })) }} className="sr-only" />
-                Corporal
-              </label>
-            </div>
-          </div>
-
-          {serviceCategory && (
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Procedimento *</label>
-              <SearchableSelect
-                options={(serviceCategory === 'facial' ? FACIAL_SERVICES : CORPORAL_SERVICES).map((s) => ({ value: s, label: s }))}
-                value={form.service}
-                onChange={(v) => setForm((f) => ({ ...f, service: v }))}
-                placeholder="Buscar procedimento..."
-                required
-              />
+              <label className="mb-2 block text-sm font-medium text-gray-700">Sala *</label>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setForm(f => ({ ...f, room: 'sala1' }))} 
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${form.room === 'sala1' ? 'bg-brand-50 border-brand-gold text-brand-700' : 'bg-white border-gray-200 text-gray-500'}`}>Sala 1</button>
+                <button type="button" onClick={() => setForm(f => ({ ...f, room: 'sala2' }))} 
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${form.room === 'sala2' ? 'bg-brand-50 border-brand-gold text-brand-700' : 'bg-white border-gray-200 text-gray-500'}`}>Sala 2</button>
+              </div>
             </div>
-          )}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">Tipo de Procedimento *</label>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setServiceCategory('facial')} 
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${serviceCategory === 'facial' ? 'bg-brand-50 border-brand-gold text-brand-700' : 'bg-white border-gray-200 text-gray-500'}`}>Facial</button>
+                <button type="button" onClick={() => setServiceCategory('corporal')} 
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${serviceCategory === 'corporal' ? 'bg-brand-50 border-brand-gold text-brand-700' : 'bg-white border-gray-200 text-gray-500'}`}>Corporal</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Procedimento *</label>
+            <SearchableSelect
+              options={serviceOptions}
+              value={form.service}
+              onChange={(v) => setForm((f) => ({ ...f, service: v }))}
+              placeholder="Buscar procedimento..."
+              required
+            />
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
@@ -528,9 +531,7 @@ export default function Appointments() {
                 + Adicionar material
               </button>
             </div>
-            {form.stockUsed.length === 0 ? (
-              <p className="text-xs text-gray-400">Nenhum material adicionado.</p>
-            ) : (
+            {form.stockUsed.length > 0 ? (
               <div className="space-y-2">
                 {form.stockUsed.map((usage, idx) => (
                   <div key={idx} className="flex items-center gap-2">
@@ -550,6 +551,8 @@ export default function Appointments() {
                   </div>
                 ))}
               </div>
+            ) : (
+              <p className="text-xs text-gray-400">Nenhum material adicionado.</p>
             )}
           </div>
 
@@ -558,19 +561,6 @@ export default function Appointments() {
             <textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400" />
           </div>
-
-          {editing && (
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Status</label>
-              <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as Appointment['status'] }))}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400">
-                <option value="scheduled">Agendado</option>
-                <option value="completed">Concluído</option>
-                <option value="missed">Faltou</option>
-                <option value="cancelled">Cancelado</option>
-              </select>
-            </div>
-          )}
 
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={() => setModalOpen(false)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
@@ -581,6 +571,69 @@ export default function Appointments() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Service Management Modal */}
+      <Modal open={isServiceModalOpen} onClose={() => setIsServiceModalOpen(false)} title="Gerenciar Procedimentos" maxWidth="max-w-md">
+        <div className="space-y-6">
+          <form onSubmit={handleAddService} className="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Novo Procedimento</p>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Nome do Procedimento</label>
+              <input 
+                type="text" 
+                required 
+                value={newServiceName} 
+                onChange={e => setNewServiceName(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
+                placeholder="Ex: Limpeza de Pele Profunda"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Categoria</label>
+              <div className="flex gap-2">
+                <button 
+                  type="button" 
+                  onClick={() => setNewServiceCategory('facial')}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${newServiceCategory === 'facial' ? 'bg-brand-50 border-brand-gold text-brand-700' : 'bg-white border-gray-200 text-gray-500'}`}
+                >
+                  Facial
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setNewServiceCategory('corporal')}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${newServiceCategory === 'corporal' ? 'bg-brand-50 border-brand-gold text-brand-700' : 'bg-white border-gray-200 text-gray-500'}`}
+                >
+                  Corporal
+                </button>
+              </div>
+            </div>
+            <button type="submit" className="w-full bg-brand-900 text-white py-2 rounded-lg text-sm font-bold hover:bg-brand-800 transition-colors">
+              Cadastrar Procedimento
+            </button>
+          </form>
+
+          <div className="space-y-3">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Procedimentos Cadastrados</p>
+            <div className="max-h-[300px] overflow-y-auto divide-y divide-gray-100 border rounded-xl">
+              {services.length === 0 ? (
+                <p className="p-4 text-center text-xs text-gray-400">Nenhum procedimento cadastrado.</p>
+              ) : (
+                services.map(s => (
+                  <div key={s.id} className="flex items-center justify-between p-3 hover:bg-gray-50">
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{s.name}</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-black">{s.category === 'facial' ? 'Facial' : 'Corporal'}</p>
+                    </div>
+                    <button onClick={() => deleteService(s.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
       </Modal>
 
       <ConfirmDialog

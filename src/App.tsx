@@ -17,6 +17,7 @@ import Leads from './pages/Leads'
 import Quotes from './pages/Quotes'
 import CompletedPackages from './pages/CompletedPackages'
 import Transactions from './pages/Transactions'
+import AccountsPayable from './pages/AccountsPayable'
 import type { Permission } from './types'
 
 function ProtectedRoute({ permission, children }: { permission: Permission; children: React.ReactNode }) {
@@ -55,6 +56,7 @@ function AppRoutes() {
           <Route path="/estoque" element={<ProtectedRoute permission="estoque"><Stock /></ProtectedRoute>} />
           <Route path="/financeiro" element={<ProtectedRoute permission="financeiro"><Financial /></ProtectedRoute>} />
           <Route path="/fluxo-caixa" element={<ProtectedRoute permission="fluxo-caixa"><Transactions /></ProtectedRoute>} />
+          <Route path="/contas-a-pagar" element={<ProtectedRoute permission="financeiro"><AccountsPayable /></ProtectedRoute>} />
           <Route path="/whatsapp" element={<ProtectedRoute permission="whatsapp"><WhatsAppConfig /></ProtectedRoute>} />
           <Route path="/usuarios" element={<ProtectedRoute permission="usuarios"><UsersPage /></ProtectedRoute>} />
         </Route>
