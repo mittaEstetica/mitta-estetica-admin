@@ -93,8 +93,9 @@ export default function CompletedPackages() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">{pkgAppointments.length} sessões realizadas</span>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs text-gray-400 hidden sm:inline">{pkgAppointments.length} sessões realizadas</span>
+                    <span className="text-xs text-gray-400 sm:hidden">{pkgAppointments.length} sessões</span>
                     {expanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
                   </div>
                 </div>

@@ -252,21 +252,21 @@ export default function CashFlow() {
                       <p className="text-sm font-black text-gray-900 uppercase tracking-tight">{t.description}</p>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{formatDateBR(t.date)}</p>
                     </div>
-                    <span className="text-base font-black text-green-600">{formatCurrency(t.amount)}</span>
+                    <span className="text-base font-black text-green-600 whitespace-nowrap flex-shrink-0">{formatCurrency(t.amount)}</span>
                   </div>
                 ))
               )}
             </div>
 
             {/* Quick Add Entrada */}
-            <div className="mt-4 flex flex-col gap-2 p-3 bg-gray-50 rounded-3xl border border-gray-100 shadow-inner">
-              <div className="flex gap-2">
+            <div className="mt-4 flex flex-col gap-3 p-3 md:p-4 bg-gray-50 rounded-3xl border border-gray-100 shadow-inner">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input 
                   type="text" 
                   placeholder="R$ 0,00" 
                   value={quickAddEntrada.amount}
                   onChange={e => setQuickAddEntrada(p => ({ ...p, amount: e.target.value }))}
-                  className="w-24 bg-white border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-black outline-none focus:border-brand-gold shadow-sm"
+                  className="w-full sm:w-24 bg-white border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-black outline-none focus:border-brand-gold shadow-sm"
                 />
                 <input 
                   type="text" 
@@ -337,8 +337,8 @@ export default function CashFlow() {
                       </div>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{formatDateBR(t.date)}</p>
                     </div>
-                    <div className="text-right">
-                      <span className="text-base font-black text-red-600">{formatCurrency(t.amount)}</span>
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-base font-black text-red-600 whitespace-nowrap">{formatCurrency(t.amount)}</span>
                     </div>
                   </div>
                 ))
@@ -346,14 +346,14 @@ export default function CashFlow() {
             </div>
 
             {/* Quick Add Saída */}
-            <div className="mt-4 flex flex-col gap-2 p-3 bg-gray-50 rounded-3xl border border-gray-100 shadow-inner">
-              <div className="flex gap-2">
+            <div className="mt-4 flex flex-col gap-3 p-3 md:p-4 bg-gray-50 rounded-3xl border border-gray-100 shadow-inner">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input 
                   type="text" 
                   placeholder="R$ 0,00" 
                   value={quickAddSaida.amount}
                   onChange={e => setQuickAddSaida(p => ({ ...p, amount: e.target.value }))}
-                  className="w-24 bg-white border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-black outline-none focus:border-brand-gold shadow-sm"
+                  className="w-full sm:w-24 bg-white border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-black outline-none focus:border-brand-gold shadow-sm"
                 />
                 <input 
                   type="text" 

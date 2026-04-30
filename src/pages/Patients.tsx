@@ -135,7 +135,7 @@ export default function Patients() {
                 key={p.id}
                 className="group relative rounded-xl border border-gray-100 bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="absolute right-3 top-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute right-3 top-3 flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => openEdit(p)}
                     className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
@@ -178,7 +178,7 @@ export default function Patients() {
                   </div>
 
                   {patientPkgs.length > 0 && (
-                    <div className="mt-3 flex items-center gap-3 border-t border-gray-100 pt-3">
+                    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-gray-100 pt-3">
                       <div className="flex items-center gap-1 text-xs text-brand-700">
                         <PackageCheck className="h-3.5 w-3.5" />
                         <span className="font-medium">{activePkgs.length} ativo{activePkgs.length !== 1 ? 's' : ''}</span>

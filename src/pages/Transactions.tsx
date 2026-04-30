@@ -127,8 +127,8 @@ export default function Transactions() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 p-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 p-4 md:p-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Fluxo de Caixa</h1>
           <p className="text-gray-500 font-medium">Controle detalhado de entradas e saídas mensais.</p>
@@ -151,7 +151,7 @@ export default function Transactions() {
       </div>
 
       {/* Monthly Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Entradas</span>
@@ -201,7 +201,7 @@ export default function Transactions() {
                 </div>
               ) : (
                 entradas.map((t) => (
-                  <div key={t.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 group transition-all">
+                  <div key={t.id} className="flex items-center gap-3 md:gap-4 px-4 md:px-6 py-4 hover:bg-gray-50 group transition-all">
                     {editingItem?.id === t.id ? (
                       <div className="flex flex-1 items-center gap-2">
                         <input
@@ -226,7 +226,7 @@ export default function Transactions() {
                           <p className="text-sm font-black text-gray-900 truncate uppercase tracking-tight">{t.description}</p>
                           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t.date.split('-').reverse().join('/')}</p>
                         </div>
-                        <span className="text-sm font-black text-green-600 bg-green-50 px-3 py-1 rounded-full">{formatCurrency(t.amount)}</span>
+                        <span className="text-sm font-black text-green-600 bg-green-50 px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0">{formatCurrency(t.amount)}</span>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all scale-90">
                           <button onClick={() => openEdit(t)} className="p-2 text-gray-400 hover:bg-brand-50 hover:text-brand-600 rounded-lg">
                             <Edit className="h-4 w-4" />
@@ -242,7 +242,7 @@ export default function Transactions() {
               )}
             </div>
 
-            <form onSubmit={handleAddEntrada} className="flex items-center gap-2 bg-gray-50/50 px-6 py-5 border-t border-gray-100">
+            <form onSubmit={handleAddEntrada} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gray-50/50 px-4 md:px-6 py-5 border-t border-gray-100">
               <input
                 type="number"
                 step="0.01"
@@ -250,7 +250,7 @@ export default function Transactions() {
                 placeholder="R$ 0,00"
                 value={entradaForm.amount}
                 onChange={(e) => setEntradaForm((f) => ({ ...f, amount: e.target.value }))}
-                className="w-28 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-black focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                className="w-full sm:w-28 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-black focus:border-green-400 focus:ring-1 focus:ring-green-400"
               />
               <input
                 type="text"
@@ -287,7 +287,7 @@ export default function Transactions() {
                 </div>
               ) : (
                 saidas.map((t) => (
-                  <div key={t.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 group transition-all">
+                  <div key={t.id} className="flex items-center gap-3 md:gap-4 px-4 md:px-6 py-4 hover:bg-gray-50 group transition-all">
                     {editingItem?.id === t.id ? (
                       <div className="flex flex-1 items-center gap-2">
                         <input
@@ -321,7 +321,7 @@ export default function Transactions() {
                           </div>
                           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t.date.split('-').reverse().join('/')}</p>
                         </div>
-                        <span className={`text-sm font-black px-3 py-1 rounded-full ${t.paid ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{formatCurrency(t.amount)}</span>
+                        <span className={`text-sm font-black px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 ${t.paid ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{formatCurrency(t.amount)}</span>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all scale-90">
                           <button onClick={() => openEdit(t)} className="p-2 text-gray-400 hover:bg-brand-50 hover:text-brand-600 rounded-lg">
                             <Edit className="h-4 w-4" />
@@ -337,7 +337,7 @@ export default function Transactions() {
               )}
             </div>
 
-            <form onSubmit={handleAddSaida} className="flex items-center gap-2 bg-gray-50/50 px-6 py-5 border-t border-gray-100">
+            <form onSubmit={handleAddSaida} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gray-50/50 px-4 md:px-6 py-5 border-t border-gray-100">
               <input
                 type="number"
                 step="0.01"
@@ -345,7 +345,7 @@ export default function Transactions() {
                 placeholder="R$ 0,00"
                 value={saidaForm.amount}
                 onChange={(e) => setSaidaForm((f) => ({ ...f, amount: e.target.value }))}
-                className="w-28 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-black focus:border-red-400 focus:ring-1 focus:ring-red-400"
+                className="w-full sm:w-28 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-black focus:border-red-400 focus:ring-1 focus:ring-red-400"
               />
               <input
                 type="text"

@@ -173,7 +173,7 @@ export default function Collaborators() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-3">
+                <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3">
                   <Link
                     to={`/colaboradoras/${collab.id}`}
                     className="inline-flex items-center gap-1 text-xs text-brand-gold hover:text-brand-700 font-medium"

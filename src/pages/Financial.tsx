@@ -184,7 +184,7 @@ export default function Financial() {
                       <p className="text-xs text-gray-500">{item.sessions} {item.sessions === 1 ? 'sessão' : 'sessões'} · {item.commissionPercent}%</p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0">
                     <p className="text-sm font-semibold text-green-600">{formatCurrency(item.earned)}</p>
                     <Link
                       to={`/colaboradoras/${item.collaboratorId}`}
@@ -221,7 +221,7 @@ export default function Financial() {
                         <p className="text-sm font-medium text-gray-900">{pkg.name}</p>
                         <p className="text-xs text-gray-500">{collab?.name ?? '—'} · {remaining} sessões restantes</p>
                       </div>
-                      <p className="text-sm font-semibold text-gray-700">{formatCurrency(pkg.sessionValue)}/sessão</p>
+                      <p className="text-sm font-semibold text-gray-700 whitespace-nowrap ml-2 flex-shrink-0">{formatCurrency(pkg.sessionValue)}/sessão</p>
                     </div>
                     <div className="mt-1 flex gap-3 text-xs text-gray-400">
                       <span>Colaboradora: {formatCurrency(commissionPerSession)}</span>
