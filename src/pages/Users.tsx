@@ -18,6 +18,7 @@ import type { SystemUser, Permission } from '../types'
 const AVAILABLE_PERMISSIONS: { key: Permission; label: string; description: string }[] = [
   { key: 'dashboard', label: 'Dashboard', description: 'Visão geral e estatísticas' },
   { key: 'pacientes', label: 'Pacientes', description: 'Cadastro e pacotes de pacientes' },
+  { key: 'pacotes-finalizados', label: 'Pacotes Finalizados', description: 'Visualização de pacotes concluídos' },
   { key: 'agendamentos', label: 'Agendamentos', description: 'Agenda e sessões' },
   { key: 'colaboradoras', label: 'Colaboradoras', description: 'Gestão de colaboradoras e comissões' },
   { key: 'estoque', label: 'Estoque', description: 'Controle de materiais e insumos' },

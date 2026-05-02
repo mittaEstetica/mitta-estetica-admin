@@ -48,6 +48,7 @@ export type Permission =
   | 'comercial'
   | 'orcamentos'
   | 'fluxo-caixa'
+  | 'pacotes-finalizados'
 
 export interface AuthUser {
   id: string

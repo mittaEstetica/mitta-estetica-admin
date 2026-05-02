@@ -26,6 +26,32 @@ function ProtectedRoute({ permission, children }: { permission: Permission; chil
   return <>{children}</>
 }
 
+function IndexRoute() {
+  const { hasPermission } = useAuth()
+  
+  if (hasPermission('dashboard')) {
+    return <Dashboard />
+  }
+  
+  if (hasPermission('agendamentos')) return <Navigate to="/agendamentos" replace />
+  if (hasPermission('pacotes-finalizados')) return <Navigate to="/pacotes-finalizados" replace />
+  if (hasPermission('pacientes')) return <Navigate to="/pacientes" replace />
+  if (hasPermission('colaboradoras')) return <Navigate to="/colaboradoras" replace />
+  if (hasPermission('comercial')) return <Navigate to="/comercial" replace />
+  if (hasPermission('orcamentos')) return <Navigate to="/orcamentos" replace />
+  if (hasPermission('estoque')) return <Navigate to="/estoque" replace />
+  if (hasPermission('financeiro')) return <Navigate to="/financeiro" replace />
+  if (hasPermission('fluxo-caixa')) return <Navigate to="/fluxo-caixa" replace />
+  if (hasPermission('whatsapp')) return <Navigate to="/whatsapp" replace />
+  if (hasPermission('usuarios')) return <Navigate to="/usuarios" replace />
+
+  return (
+    <div className="flex h-full items-center justify-center p-8">
+      <p className="text-gray-500">Você não possui permissões de acesso.</p>
+    </div>
+  )
+}
+
 function AppRoutes() {
   const { loading } = useData()
 
@@ -44,13 +70,13 @@ function AppRoutes() {
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<IndexRoute />} />
           <Route path="/pacientes" element={<ProtectedRoute permission="pacientes"><Patients /></ProtectedRoute>} />
           <Route path="/pacientes/:id" element={<ProtectedRoute permission="pacientes"><PatientDetail /></ProtectedRoute>} />
           <Route path="/agendamentos" element={<ProtectedRoute permission="agendamentos"><Appointments /></ProtectedRoute>} />
           <Route path="/colaboradoras" element={<ProtectedRoute permission="colaboradoras"><Collaborators /></ProtectedRoute>} />
           <Route path="/colaboradoras/:id" element={<ProtectedRoute permission="colaboradoras"><CollaboratorDetail /></ProtectedRoute>} />
-          <Route path="/pacotes-finalizados" element={<ProtectedRoute permission="pacientes"><CompletedPackages /></ProtectedRoute>} />
+          <Route path="/pacotes-finalizados" element={<ProtectedRoute permission="pacotes-finalizados"><CompletedPackages /></ProtectedRoute>} />
           <Route path="/comercial" element={<ProtectedRoute permission="comercial"><Leads /></ProtectedRoute>} />
           <Route path="/orcamentos" element={<ProtectedRoute permission="orcamentos"><Quotes /></ProtectedRoute>} />
           <Route path="/estoque" element={<ProtectedRoute permission="estoque"><Stock /></ProtectedRoute>} />

@@ -25,7 +25,7 @@ const allLinks: { to: string; icon: typeof LayoutDashboard; label: string; permi
   { to: '/pacientes', icon: Users, label: 'Pacientes', permission: 'pacientes' },
   { to: '/agendamentos', icon: CalendarDays, label: 'Agenda', permission: 'agendamentos' },
   { to: '/colaboradoras', icon: UserCheck, label: 'Colaboradoras', permission: 'colaboradoras' },
-  { to: '/pacotes-finalizados', icon: PackageCheck, label: 'Pacotes Finalizados', permission: 'pacientes' },
+  { to: '/pacotes-finalizados', icon: PackageCheck, label: 'Pacotes Finalizados', permission: 'pacotes-finalizados' },
   { to: '/comercial', icon: Megaphone, label: 'Comercial', permission: 'comercial' },
   { to: '/orcamentos', icon: FileText, label: 'Orçamentos', permission: 'orcamentos' },
   { to: '/estoque', icon: Warehouse, label: 'Estoque', permission: 'estoque' },
