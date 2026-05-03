@@ -129,6 +129,7 @@ export interface Appointment {
   room: string
   status: 'scheduled' | 'completed' | 'missed' | 'cancelled'
   stockUsed: { stockItemId: string; quantity: number }[]
+  commissionPercent?: number
   notes: string
   createdAt: string
 }

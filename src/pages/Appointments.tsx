@@ -35,6 +35,7 @@ const emptyForm = {
   room: 'sala1',
   status: 'scheduled' as Appointment['status'],
   stockUsed: [] as { stockItemId: string; quantity: number }[],
+  commissionPercent: undefined as number | undefined,
   notes: '',
 }
 
@@ -156,6 +157,7 @@ export default function Appointments() {
       room: appt.room || 'sala1',
       status: appt.status,
       stockUsed: appt.stockUsed,
+      commissionPercent: appt.commissionPercent,
       notes: appt.notes,
     })
     // Try to find the service category
@@ -457,15 +459,33 @@ export default function Appointments() {
             </div>
           )}
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Colaboradora Responsável *</label>
-            <SearchableSelect
-              options={collaboratorOptions}
-              value={form.collaboratorId}
-              onChange={(v) => setForm((f) => ({ ...f, collaboratorId: v }))}
-              placeholder="Buscar colaboradora..."
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Colaboradora Responsável *</label>
+              <SearchableSelect
+                options={collaboratorOptions}
+                value={form.collaboratorId}
+                onChange={(v) => {
+                  const collab = collaborators.find(c => c.id === v)
+                  setForm((f) => ({ ...f, collaboratorId: v, commissionPercent: collab ? collab.commissionPercent : undefined }))
+                }}
+                placeholder="Buscar colaboradora..."
+                required
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Comissão (%)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={form.commissionPercent ?? ''}
+                onChange={(e) => setForm((f) => ({ ...f, commissionPercent: e.target.value ? Number(e.target.value) : undefined }))}
+                placeholder="Ex: 35"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
