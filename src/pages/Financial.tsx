@@ -31,20 +31,31 @@ export default function Financial() {
       filteredCommissions = commissions.filter((c) => new Date(c.createdAt) >= startDate)
     }
 
-    const totalCollaborators = filteredCommissions.reduce((sum, c) => sum + c.clinicAmount, 0)
-    const totalClinic = filteredCommissions.reduce((sum, c) => sum + c.collaboratorAmount, 0)
-    const totalRevenue = totalCollaborators + totalClinic
-    const totalSessions = filteredCommissions.length
-
+    let totalCollaborators = 0
+    let totalClinic = 0
     const byCollaborator: Record<string, { earned: number; sessions: number; clinic: number }> = {}
+
     for (const com of filteredCommissions) {
+      const collab = collaborators.find((c) => c.id === com.collaboratorId)
+      const isClinicCollab = collab?.name?.toLowerCase().trim() === 'clínica' || collab?.name?.toLowerCase().trim() === 'clinica'
+
+      if (isClinicCollab) {
+        totalClinic += com.collaboratorAmount + com.clinicAmount
+      } else {
+        totalCollaborators += com.collaboratorAmount
+        totalClinic += com.clinicAmount
+      }
+
       if (!byCollaborator[com.collaboratorId]) {
         byCollaborator[com.collaboratorId] = { earned: 0, sessions: 0, clinic: 0 }
       }
-      byCollaborator[com.collaboratorId].earned += com.clinicAmount
+      byCollaborator[com.collaboratorId].earned += com.collaboratorAmount
       byCollaborator[com.collaboratorId].sessions += 1
-      byCollaborator[com.collaboratorId].clinic += com.collaboratorAmount
+      byCollaborator[com.collaboratorId].clinic += com.clinicAmount
     }
+
+    const totalRevenue = totalCollaborators + totalClinic
+    const totalSessions = filteredCommissions.length
 
     const collaboratorBreakdown = Object.entries(byCollaborator)
       .map(([collaboratorId, data]) => {
@@ -212,7 +223,8 @@ export default function Financial() {
               {stats.activePackagesWithCollab.map((pkg) => {
                 const collab = collaborators.find((c) => c.id === pkg.collaboratorId)
                 const remaining = pkg.totalSessions - pkg.completedSessions
-                const commissionPerSession = pkg.sessionValue * (collab?.commissionPercent ?? 0) / 100
+                const pct = pkg.commissionPercent ?? collab?.commissionPercent ?? 0
+                const commissionPerSession = pkg.sessionValue * pct / 100
                 const clinicPerSession = pkg.sessionValue - commissionPerSession
                 return (
                   <div key={pkg.id} className="px-5 py-3">

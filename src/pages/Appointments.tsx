@@ -36,6 +36,7 @@ const emptyForm = {
   status: 'scheduled' as Appointment['status'],
   stockUsed: [] as { stockItemId: string; quantity: number }[],
   commissionPercent: undefined as number | undefined,
+  sessionValue: 0,
   notes: '',
 }
 
@@ -158,6 +159,7 @@ export default function Appointments() {
       status: appt.status,
       stockUsed: appt.stockUsed,
       commissionPercent: appt.commissionPercent,
+      sessionValue: 0,
       notes: appt.notes,
     })
     // Try to find the service category
@@ -456,6 +458,25 @@ export default function Appointments() {
                   <option key={p.id} value={p.id}>{p.name} ({p.completedSessions}/{p.totalSessions})</option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {!form.packageId && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Valor da Sessão (R$) *</label>
+              <input
+                required
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.sessionValue || ''}
+                onChange={(e) => setForm((f) => ({ ...f, sessionValue: Number(e.target.value) }))}
+                placeholder="Ex: 150.00"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400"
+              />
+              <p className="mt-1 text-xs text-gray-400">
+                Como este é um atendimento avulso, um pacote de 1 sessão será gerado automaticamente.
+              </p>
             </div>
           )}
 

@@ -49,8 +49,8 @@ export default function CashFlow() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   // Quick Add State
-  const [quickAddEntrada, setQuickAddEntrada] = useState({ amount: '', description: '', paid: true })
-  const [quickAddSaida, setQuickAddSaida] = useState({ amount: '', description: '', paid: true })
+  const [quickAddEntrada, setQuickAddEntrada] = useState({ amount: '', description: '', date: '', paid: true })
+  const [quickAddSaida, setQuickAddSaida] = useState({ amount: '', description: '', date: '', paid: true })
 
   const monthTransactions = useMemo(() => {
     return transactions.filter(t => {
@@ -138,15 +138,15 @@ export default function CashFlow() {
       type,
       description: source.description,
       amount: parseFloat(cleanAmount) || 0,
-      date: `${currentDate.year}-${String(currentDate.month + 1).padStart(2, '0')}-01`,
+      date: source.date || `${currentDate.year}-${String(currentDate.month + 1).padStart(2, '0')}-01`,
       paid: source.paid,
       receiptUrl: ''
     }
 
     try {
       await addTransaction(data)
-      if (type === 'entrada') setQuickAddEntrada({ amount: '', description: '', paid: true })
-      else setQuickAddSaida({ amount: '', description: '', paid: true })
+      if (type === 'entrada') setQuickAddEntrada({ amount: '', description: '', date: '', paid: true })
+      else setQuickAddSaida({ amount: '', description: '', date: '', paid: true })
     } catch (err) {
       console.error('Quick add error:', err)
       alert('Erro ao realizar lançamento rápido.')
@@ -226,10 +226,10 @@ export default function CashFlow() {
       </div>
 
       {/* Main Lists Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Entradas Column */}
-        <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden min-h-[500px]">
-          <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
+        <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col min-h-[calc(100vh-320px)]">
+          <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <div className="bg-green-50 p-2.5 rounded-2xl">
                 <ArrowUpRight className="h-5 w-5 text-green-500" />
@@ -241,8 +241,8 @@ export default function CashFlow() {
             </button>
           </div>
 
-          <div className="p-4 space-y-2">
-            <div className="max-h-[600px] overflow-y-auto space-y-2 pr-1">
+          <div className="p-4 flex flex-col flex-1 overflow-hidden">
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
               {incomes.length === 0 ? (
                 <p className="text-center py-20 text-gray-400 text-sm italic font-medium">Nenhuma entrada registrada.</p>
               ) : (
@@ -259,8 +259,14 @@ export default function CashFlow() {
             </div>
 
             {/* Quick Add Entrada */}
-            <div className="mt-4 flex flex-col gap-3 p-3 md:p-4 bg-gray-50 rounded-3xl border border-gray-100 shadow-inner">
+            <div className="mt-4 shrink-0 flex flex-col gap-3 p-3 md:p-4 bg-gray-50 rounded-3xl border border-gray-100 shadow-inner">
               <div className="flex flex-col sm:flex-row gap-2">
+                <input 
+                  type="date"
+                  value={quickAddEntrada.date || `${currentDate.year}-${String(currentDate.month + 1).padStart(2, '0')}-01`}
+                  onChange={e => setQuickAddEntrada(p => ({ ...p, date: e.target.value }))}
+                  className="w-full sm:w-32 bg-white border border-gray-200 rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-brand-gold shadow-sm text-gray-600"
+                />
                 <input 
                   type="text" 
                   placeholder="R$ 0,00" 
@@ -288,7 +294,7 @@ export default function CashFlow() {
                   <label htmlFor="qa_e_paid" className="text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer">Recebido</label>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => setQuickAddEntrada({ amount: '', description: '', paid: true })} className="p-2 text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></button>
+                  <button onClick={() => setQuickAddEntrada({ amount: '', description: '', date: '', paid: true })} className="p-2 text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></button>
                   <button 
                     onClick={() => handleQuickAdd('entrada')}
                     className="bg-green-500 text-white p-2 rounded-2xl hover:bg-green-600 transition-all shadow-md active:scale-95"
@@ -302,8 +308,8 @@ export default function CashFlow() {
         </div>
 
         {/* Saídas Column */}
-        <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden min-h-[500px]">
-          <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
+        <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col min-h-[calc(100vh-320px)]">
+          <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <div className="bg-red-50 p-2.5 rounded-2xl">
                 <ArrowDownRight className="h-5 w-5 text-red-500" />
@@ -315,8 +321,8 @@ export default function CashFlow() {
             </button>
           </div>
 
-          <div className="p-4 space-y-2">
-            <div className="max-h-[600px] overflow-y-auto space-y-2 pr-1">
+          <div className="p-4 flex flex-col flex-1 overflow-hidden">
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
               {expenses.length === 0 ? (
                 <p className="text-center py-20 text-gray-400 text-sm italic font-medium">Nenhuma saída registrada.</p>
               ) : (
@@ -346,8 +352,14 @@ export default function CashFlow() {
             </div>
 
             {/* Quick Add Saída */}
-            <div className="mt-4 flex flex-col gap-3 p-3 md:p-4 bg-gray-50 rounded-3xl border border-gray-100 shadow-inner">
+            <div className="mt-4 shrink-0 flex flex-col gap-3 p-3 md:p-4 bg-gray-50 rounded-3xl border border-gray-100 shadow-inner">
               <div className="flex flex-col sm:flex-row gap-2">
+                <input 
+                  type="date"
+                  value={quickAddSaida.date || `${currentDate.year}-${String(currentDate.month + 1).padStart(2, '0')}-01`}
+                  onChange={e => setQuickAddSaida(p => ({ ...p, date: e.target.value }))}
+                  className="w-full sm:w-32 bg-white border border-gray-200 rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-brand-gold shadow-sm text-gray-600"
+                />
                 <input 
                   type="text" 
                   placeholder="R$ 0,00" 
@@ -375,7 +387,7 @@ export default function CashFlow() {
                   <label htmlFor="qa_s_paid" className="text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer">Pago</label>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => setQuickAddSaida({ amount: '', description: '', paid: true })} className="p-2 text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></button>
+                  <button onClick={() => setQuickAddSaida({ amount: '', description: '', date: '', paid: true })} className="p-2 text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></button>
                   <button 
                     onClick={() => handleQuickAdd('saida')}
                     className="bg-red-500 text-white p-2 rounded-2xl hover:bg-red-600 transition-all shadow-md active:scale-95"

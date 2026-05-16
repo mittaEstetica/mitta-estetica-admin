@@ -231,7 +231,7 @@ export default function CollaboratorDetail() {
                           </span>
                         </div>
                         <p className="mt-1 text-xs text-gray-400">
-                          Valor por sessão: {formatCurrency(pkg.sessionValue)} · Comissão: {formatCurrency(pkg.sessionValue * collab.commissionPercent / 100)}/sessão
+                          Valor por sessão: {formatCurrency(pkg.sessionValue)} · Comissão: {formatCurrency(pkg.sessionValue * (pkg.commissionPercent ?? collab.commissionPercent) / 100)}/sessão
                         </p>
                       </div>
                     )

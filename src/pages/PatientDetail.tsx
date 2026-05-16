@@ -37,6 +37,7 @@ const emptyPkgForm = {
   totalValue: 0,
   sessionValue: 0,
   paidValue: 0,
+  commissionPercent: undefined as number | undefined,
   status: 'active' as Package['status'],
 }
 
@@ -76,7 +77,7 @@ export default function PatientDetail() {
 
   const [photos, setPhotos] = useState<PatientPhoto[]>([])
   const [photoModalOpen, setPhotoModalOpen] = useState(false)
-  const [photoForm, setPhotoForm] = useState({ photo: '', procedureName: '', date: '', notes: '' })
+  const [photoForm, setPhotoForm] = useState({ photos: [] as string[], procedureName: '', date: '', notes: '' })
   const [selectedPhoto, setSelectedPhoto] = useState<PatientPhoto | null>(null)
   const photoFileRef = useRef<HTMLInputElement>(null)
 
@@ -87,25 +88,39 @@ export default function PatientDetail() {
   }, [id])
 
   const handlePhotoFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => setPhotoForm((f) => ({ ...f, photo: reader.result as string }))
-    reader.readAsDataURL(file)
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    const newPhotos: string[] = []
+    let processed = 0
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        newPhotos.push(reader.result as string)
+        processed++
+        if (processed === files.length) {
+          setPhotoForm((f) => ({ ...f, photos: [...(f.photos || []), ...newPhotos] }))
+        }
+      }
+      reader.readAsDataURL(file)
+    })
   }, [])
 
   const handlePhotoSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!id || !photoForm.photo) return
-    const newPhoto = await api.patientPhotos.create({
-      patientId: id,
-      photo: photoForm.photo,
-      procedureName: photoForm.procedureName,
-      date: photoForm.date,
-    })
-    setPhotos((prev) => [newPhoto, ...prev])
+    if (!id || !photoForm.photos?.length) return
+    const newPhotos = await Promise.all(
+      photoForm.photos.map(photo => 
+        api.patientPhotos.create({
+          patientId: id,
+          photo,
+          procedureName: photoForm.procedureName,
+          date: photoForm.date,
+        })
+      )
+    )
+    setPhotos((prev) => [...newPhotos, ...prev])
     setPhotoModalOpen(false)
-    setPhotoForm({ photo: '', procedureName: '', date: '', notes: '' })
+    setPhotoForm({ photos: [], procedureName: '', date: '', notes: '' })
   }
 
   const deletePhoto = async (photoId: string) => {
@@ -136,6 +151,7 @@ export default function PatientDetail() {
       totalValue: pkg.totalValue,
       sessionValue: pkg.sessionValue,
       paidValue: pkg.paidValue,
+      commissionPercent: pkg.commissionPercent,
       status: pkg.status,
     })
     const hasFacial = pkg.services.some((s) => FACIAL_SERVICES.includes(s as typeof FACIAL_SERVICES[number]))
@@ -283,7 +299,7 @@ export default function PatientDetail() {
             <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{photos.length}</span>
           </div>
           <button
-            onClick={() => { setPhotoForm({ photo: '', procedureName: '', date: '', notes: '' }); setPhotoModalOpen(true) }}
+            onClick={() => { setPhotoForm({ photos: [], procedureName: '', date: '', notes: '' }); setPhotoModalOpen(true) }}
             className="inline-flex items-center gap-1 rounded-lg bg-brand-gold px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700 transition-colors"
           >
             <Plus className="h-3.5 w-3.5" /> Nova Foto
@@ -345,8 +361,12 @@ export default function PatientDetail() {
               onClick={() => photoFileRef.current?.click()}
               className="relative flex h-40 w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:border-brand-400 transition-colors overflow-hidden"
             >
-              {photoForm.photo ? (
-                <img src={photoForm.photo} alt="" className="h-full w-full object-contain" />
+              {photoForm.photos && photoForm.photos.length > 0 ? (
+                <div className="flex gap-2 p-2 overflow-x-auto h-full w-full items-center">
+                  {photoForm.photos.map((p, i) => (
+                    <img key={i} src={p} alt="" className="h-full object-contain shrink-0" />
+                  ))}
+                </div>
               ) : (
                 <div className="text-center">
                   <Camera className="mx-auto h-8 w-8 text-gray-400" />
@@ -354,12 +374,11 @@ export default function PatientDetail() {
                 </div>
               )}
             </div>
-            <input ref={photoFileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoFile} />
+            <input ref={photoFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoFile} />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Procedimento Realizado *</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Procedimento Realizado</label>
             <select
-              required
               value={photoForm.procedureName}
               onChange={(e) => setPhotoForm((f) => ({ ...f, procedureName: e.target.value }))}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400"
@@ -371,9 +390,8 @@ export default function PatientDetail() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Data *</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Data</label>
             <input
-              required
               type="date"
               value={photoForm.date}
               onChange={(e) => setPhotoForm((f) => ({ ...f, date: e.target.value }))}
@@ -384,8 +402,8 @@ export default function PatientDetail() {
             <button type="button" onClick={() => setPhotoModalOpen(false)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
               Cancelar
             </button>
-            <button type="submit" disabled={!photoForm.photo} className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors disabled:opacity-50">
-              Salvar Foto
+            <button type="submit" disabled={!photoForm.photos?.length} className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors disabled:opacity-50">
+              Salvar Foto{photoForm.photos?.length > 1 ? 's' : ''}
             </button>
           </div>
         </form>
@@ -503,13 +521,14 @@ export default function PatientDetail() {
                       {(() => {
                         const collab = pkg.collaboratorId ? collaborators.find((c) => c.id === pkg.collaboratorId) : null
                         if (!collab) return null
-                        const commissionPerSession = pkg.sessionValue * collab.commissionPercent / 100
+                        const pct = pkg.commissionPercent ?? collab.commissionPercent
+                        const commissionPerSession = pkg.sessionValue * pct / 100
                         const clinicPerSession = pkg.sessionValue - commissionPerSession
                         return (
                           <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3">
                             <div className="flex items-center gap-2 mb-1">
                               <UserCheck className="h-4 w-4 text-amber-600" />
-                              <p className="text-xs font-semibold text-amber-700">Responsável: {collab.name} ({collab.commissionPercent}%)</p>
+                              <p className="text-xs font-semibold text-amber-700">Responsável: {collab.name} ({pct}%)</p>
                             </div>
                             <div className="flex gap-4 text-xs text-amber-600">
                               <span>Colaboradora: {formatCurrency(commissionPerSession)}/sessão</span>
@@ -634,7 +653,10 @@ export default function PatientDetail() {
                 subtitle: `${c.commissionPercent}% comissão`,
               }))}
               value={pkgForm.collaboratorId}
-              onChange={(v) => setPkgForm((f) => ({ ...f, collaboratorId: v }))}
+              onChange={(v) => {
+                const collab = collaborators.find(c => c.id === v)
+                setPkgForm((f) => ({ ...f, collaboratorId: v, commissionPercent: collab ? collab.commissionPercent : undefined }))
+              }}
               placeholder="Buscar colaboradora..."
               emptyLabel="Sem colaboradora (100% clínica)"
             />
@@ -755,6 +777,22 @@ export default function PatientDetail() {
             </div>
           </div>
 
+          {pkgForm.collaboratorId && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Porcentagem de Comissão (%)</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step="0.01"
+                value={pkgForm.commissionPercent ?? ''}
+                onChange={(e) => setPkgForm((f) => ({ ...f, commissionPercent: e.target.value ? Number(e.target.value) : undefined }))}
+                placeholder="Ex: 35"
+                className="w-full sm:w-1/2 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400"
+              />
+            </div>
+          )}
+
           {pkgForm.totalValue > 0 && pkgForm.totalSessions > 0 && (
             <div className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 space-y-1">
               <p className="text-xs font-medium text-gray-700">
@@ -764,13 +802,14 @@ export default function PatientDetail() {
                 const collab = collaborators.find((c) => c.id === pkgForm.collaboratorId)
                 if (!collab) return null
                 const sv = pkgForm.totalValue / pkgForm.totalSessions
+                const pct = pkgForm.commissionPercent ?? collab.commissionPercent
                 return (
                   <>
                     <p className="text-xs text-gray-500">
-                      Colaboradora ({collab.name} — {collab.commissionPercent}%): <span className="font-semibold text-green-600">{formatCurrency(sv * collab.commissionPercent / 100)}</span>/sessão
+                      Colaboradora ({collab.name} — {pct}%): <span className="font-semibold text-green-600">{formatCurrency(sv * pct / 100)}</span>/sessão
                     </p>
                     <p className="text-xs text-gray-500">
-                      Clínica: <span className="font-semibold text-purple-600">{formatCurrency(sv * (100 - collab.commissionPercent) / 100)}</span>/sessão
+                      Clínica: <span className="font-semibold text-purple-600">{formatCurrency(sv * (100 - pct) / 100)}</span>/sessão
                     </p>
                   </>
                 )

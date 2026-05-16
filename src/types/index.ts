@@ -81,6 +81,7 @@ export interface Package {
   totalValue: number
   sessionValue: number
   paidValue: number
+  commissionPercent?: number
   status: 'active' | 'completed' | 'cancelled'
   createdAt: string
 }
@@ -130,6 +131,7 @@ export interface Appointment {
   status: 'scheduled' | 'completed' | 'missed' | 'cancelled'
   stockUsed: { stockItemId: string; quantity: number }[]
   commissionPercent?: number
+  sessionValue?: number
   notes: string
   createdAt: string
 }
