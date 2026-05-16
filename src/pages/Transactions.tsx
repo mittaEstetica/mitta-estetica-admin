@@ -128,7 +128,7 @@ export default function Transactions() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 p-4 md:p-6">
+    <div className="max-w-[1400px] mx-auto space-y-6 md:space-y-8 p-4 md:p-6">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Fluxo de Caixa</h1>
