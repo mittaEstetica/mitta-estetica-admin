@@ -23,7 +23,7 @@ const MONTHS = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
-const emptyForm = { type: 'entrada' as 'entrada' | 'saida', amount: '', description: '', paid: false }
+const emptyForm = { type: 'entrada' as 'entrada' | 'saida', amount: '', description: '', date: '', paid: false }
 
 export default function Transactions() {
   const { transactions, addTransaction, updateTransaction, deleteTransaction } = useData()
@@ -32,7 +32,7 @@ export default function Transactions() {
   const [entradaForm, setEntradaForm] = useState({ ...emptyForm, type: 'entrada' as const })
   const [saidaForm, setSaidaForm] = useState({ ...emptyForm, type: 'saida' as const })
   const [editingItem, setEditingItem] = useState<Transaction | null>(null)
-  const [editForm, setEditForm] = useState({ type: 'entrada' as 'entrada' | 'saida', amount: '', description: '', paid: false })
+  const [editForm, setEditForm] = useState({ type: 'entrada' as 'entrada' | 'saida', amount: '', description: '', date: '', paid: false })
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [savingEntrada, setSavingEntrada] = useState(false)
   const [savingSaida, setSavingSaida] = useState(false)
@@ -83,7 +83,7 @@ export default function Transactions() {
         type: 'entrada',
         amount: parseFloat(String(entradaForm.amount).replace(',', '.')),
         description: entradaForm.description,
-        date: `${monthStr}-01`,
+        date: entradaForm.date || `${monthStr}-01`,
         paid: true,
       })
       setEntradaForm({ ...emptyForm, type: 'entrada' })
@@ -100,7 +100,7 @@ export default function Transactions() {
         type: 'saida',
         amount: parseFloat(String(saidaForm.amount).replace(',', '.')),
         description: saidaForm.description,
-        date: `${monthStr}-01`,
+        date: saidaForm.date || `${monthStr}-01`,
         paid: false,
       })
       setSaidaForm({ ...emptyForm, type: 'saida' })
@@ -111,7 +111,7 @@ export default function Transactions() {
 
   const openEdit = (t: Transaction) => {
     setEditingItem(t)
-    setEditForm({ type: t.type, amount: String(t.amount), description: t.description, paid: !!t.paid })
+    setEditForm({ type: t.type, amount: String(t.amount), description: t.description, date: t.date, paid: !!t.paid })
   }
 
   const handleEditSave = async () => {
@@ -121,6 +121,7 @@ export default function Transactions() {
       type: editForm.type,
       amount: parseFloat(String(editForm.amount).replace(',', '.')),
       description: editForm.description,
+      date: editForm.date,
       paid: editForm.paid,
     })
     setEditingItem(null)
@@ -205,6 +206,12 @@ export default function Transactions() {
                     {editingItem?.id === t.id ? (
                       <div className="flex flex-1 items-center gap-2">
                         <input
+                          type="date"
+                          value={editForm.date}
+                          onChange={(e) => setEditForm((f) => ({ ...f, date: e.target.value }))}
+                          className="w-32 rounded-xl border border-gray-200 px-3 py-2 text-sm font-bold text-gray-600"
+                        />
+                        <input
                           type="number"
                           step="0.01"
                           value={editForm.amount}
@@ -243,6 +250,13 @@ export default function Transactions() {
             </div>
 
             <form onSubmit={handleAddEntrada} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gray-50/50 px-4 md:px-6 py-5 border-t border-gray-100">
+              <input
+                type="date"
+                required
+                value={entradaForm.date || `${monthStr}-01`}
+                onChange={(e) => setEntradaForm((f) => ({ ...f, date: e.target.value }))}
+                className="w-full sm:w-36 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold text-gray-600 focus:border-green-400 focus:ring-1 focus:ring-green-400"
+              />
               <input
                 type="number"
                 step="0.01"
@@ -291,6 +305,12 @@ export default function Transactions() {
                     {editingItem?.id === t.id ? (
                       <div className="flex flex-1 items-center gap-2">
                         <input
+                          type="date"
+                          value={editForm.date}
+                          onChange={(e) => setEditForm((f) => ({ ...f, date: e.target.value }))}
+                          className="w-32 rounded-xl border border-gray-200 px-3 py-2 text-sm font-bold text-gray-600"
+                        />
+                        <input
                           type="number"
                           step="0.01"
                           value={editForm.amount}
@@ -338,6 +358,13 @@ export default function Transactions() {
             </div>
 
             <form onSubmit={handleAddSaida} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gray-50/50 px-4 md:px-6 py-5 border-t border-gray-100">
+              <input
+                type="date"
+                required
+                value={saidaForm.date || `${monthStr}-01`}
+                onChange={(e) => setSaidaForm((f) => ({ ...f, date: e.target.value }))}
+                className="w-full sm:w-36 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold text-gray-600 focus:border-red-400 focus:ring-1 focus:ring-red-400"
+              />
               <input
                 type="number"
                 step="0.01"
