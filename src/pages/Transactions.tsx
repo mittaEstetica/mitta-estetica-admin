@@ -249,13 +249,13 @@ export default function Transactions() {
               )}
             </div>
 
-            <form onSubmit={handleAddEntrada} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gray-50/50 px-4 md:px-6 py-5 border-t border-gray-100">
+            <form onSubmit={handleAddEntrada} className="flex flex-wrap items-center gap-3 bg-gray-50/50 px-4 md:px-6 py-5 border-t border-gray-100">
               <input
                 type="date"
                 required
                 value={entradaForm.date || `${monthStr}-01`}
                 onChange={(e) => setEntradaForm((f) => ({ ...f, date: e.target.value }))}
-                className="w-full sm:w-36 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold text-gray-600 focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                className="w-full xl:w-36 flex-shrink-0 min-w-0 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold text-gray-600 focus:border-green-400 focus:ring-1 focus:ring-green-400"
               />
               <input
                 type="number"
@@ -264,7 +264,7 @@ export default function Transactions() {
                 placeholder="R$ 0,00"
                 value={entradaForm.amount}
                 onChange={(e) => setEntradaForm((f) => ({ ...f, amount: e.target.value }))}
-                className="w-full sm:w-28 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-black focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                className="w-full xl:w-28 flex-shrink-0 min-w-0 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-black focus:border-green-400 focus:ring-1 focus:ring-green-400"
               />
               <input
                 type="text"
@@ -272,12 +272,12 @@ export default function Transactions() {
                 placeholder="Descrição da entrada..."
                 value={entradaForm.description}
                 onChange={(e) => setEntradaForm((f) => ({ ...f, description: e.target.value }))}
-                className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                className="flex-1 min-w-[200px] rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold focus:border-green-400 focus:ring-1 focus:ring-green-400"
               />
               <button
                 type="submit"
                 disabled={savingEntrada}
-                className="bg-green-600 text-white p-2.5 rounded-xl hover:bg-green-700 shadow-md shadow-green-100 transition-all active:scale-95"
+                className="shrink-0 bg-green-600 text-white p-2.5 rounded-xl hover:bg-green-700 shadow-md shadow-green-100 transition-all active:scale-95"
               >
                 <Plus className="h-5 w-5" />
               </button>
@@ -357,13 +357,13 @@ export default function Transactions() {
               )}
             </div>
 
-            <form onSubmit={handleAddSaida} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gray-50/50 px-4 md:px-6 py-5 border-t border-gray-100">
+            <form onSubmit={handleAddSaida} className="flex flex-wrap items-center gap-3 bg-gray-50/50 px-4 md:px-6 py-5 border-t border-gray-100">
               <input
                 type="date"
                 required
                 value={saidaForm.date || `${monthStr}-01`}
                 onChange={(e) => setSaidaForm((f) => ({ ...f, date: e.target.value }))}
-                className="w-full sm:w-36 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold text-gray-600 focus:border-red-400 focus:ring-1 focus:ring-red-400"
+                className="w-full xl:w-36 flex-shrink-0 min-w-0 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold text-gray-600 focus:border-red-400 focus:ring-1 focus:ring-red-400"
               />
               <input
                 type="number"
@@ -372,7 +372,7 @@ export default function Transactions() {
                 placeholder="R$ 0,00"
                 value={saidaForm.amount}
                 onChange={(e) => setSaidaForm((f) => ({ ...f, amount: e.target.value }))}
-                className="w-full sm:w-28 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-black focus:border-red-400 focus:ring-1 focus:ring-red-400"
+                className="w-full xl:w-28 flex-shrink-0 min-w-0 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-black focus:border-red-400 focus:ring-1 focus:ring-red-400"
               />
               <input
                 type="text"
@@ -380,12 +380,12 @@ export default function Transactions() {
                 placeholder="Descrição da despesa..."
                 value={saidaForm.description}
                 onChange={(e) => setSaidaForm((f) => ({ ...f, description: e.target.value }))}
-                className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold focus:border-red-400 focus:ring-1 focus:ring-red-400"
+                className="flex-1 min-w-[200px] rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold focus:border-red-400 focus:ring-1 focus:ring-red-400"
               />
               <button
                 type="submit"
                 disabled={savingSaida}
-                className="bg-red-600 text-white p-2.5 rounded-xl hover:bg-red-700 shadow-md shadow-red-100 transition-all active:scale-95"
+                className="shrink-0 bg-red-600 text-white p-2.5 rounded-xl hover:bg-red-700 shadow-md shadow-red-100 transition-all active:scale-95"
               >
                 <Plus className="h-5 w-5" />
               </button>
